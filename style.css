@@ -21,8 +21,9 @@ body {
 }
 
 img {
-    width: 600;
-    height: 300;
+    width: 300;
+    height: auto;
+    flex: 0;
 }
 
 #headshot {
