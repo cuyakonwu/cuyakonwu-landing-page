@@ -20,16 +20,10 @@ body {
     padding-bottom: 60px;
 }
 
-img {
-    width: 300;
-    height: auto;
-    flex: 0;
-}
-
 #headshot {
     height: 300px;
     width: auto;
-    padding-left: 20px;
+    flex: 0;
 }
 
 .information {
