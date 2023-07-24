@@ -21,7 +21,8 @@ body {
 }
 
 #headshot {
-    height: 300px;
+    max-height: 500px;
+    height: auto;
     width: auto;
     flex: 0;
 }
