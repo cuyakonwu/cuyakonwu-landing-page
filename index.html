@@ -6,42 +6,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Landing Page</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="header">
-        <h1 id="header-logo">Conrad Uyakonwu</h4>
-        <div class="links">
-            <!-- <a>header link one</a>
-            <a>header link two</a>
-            <a>header link three</a> -->
+    <nav class="navbar navbar-expand-lg bg-body-tertiary" class="navbar bg-dark border-bottom border-body" data-bs-theme="dark">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="./index.html">Conrad Uyakonwu</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="./index.html">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="./about.html">About</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="./experience.html">Experience</a>
+              </li>
+            </ul>
+          </div>
         </div>
-    </div>
+      </nav>
     <div class="hero-main">
         <div class="hero-text">
-        <h1 id="awesome">Welcome To My Website</h1>
-        <p>
-            Currently a second-year studying Computer Science at the University
+        <h1 id="awesome" class="landing-text">Welcome To My Website</h1>
+        <p id="description" class="landing-text">
+            My name is Conrad Uyakonwu, I am a third-year at the University
             of Chicago.
         </p>
-        <!-- <button>Sign Up</button> -->
+        <span id="images">
+          <a href="https://github.com/cuyakonwu"><img class="landing-pics" src="./images/github-logo.png"
+                  alt="github logo"></a>
+          <a href="https://www.linkedin.com/in/conrad-uyakonwu/"><img src="./images/linkedin-logo.png"
+                  class="landing-pics" alt="linkedin logo"></a>
+          <a href="mailto:conraduyakonwu@gmail.com"><img class="landing-pics" src="./images/envelope.png"
+                  alt="email logo"></a>
+        </span>
         </div>
-        <img src="./images/headshot.JPG" id="headshot" alt="This is a placeholder for an image">
-    </div>
-    <div class="information">
-        <h1 id="info-head">My Links</h1>
-        <div class="logos">
-            <div class="link-name"><a href="https://github.com/cuyakonwu"><img src="./images/github-logo.png"
-                alt="Github Link" class="logo-img"><p>Github Profile</p></a>
-            </div>
-            <div class="link-name"><a href="https://www.linkedin.com/in/conrad-uyakonwu-84580b249">
-                <img src="./images/linkedin-logo.png" alt="LinkedIn Link"
-                class="logo-img"><p>LinkedIn Profile</p></a>
-            </div>
-            <div class="link-name"><a href="https://docs.google.com/document/d/1AOZzqdblqK82UPtaHmnVOrPtVi50blc94LKfa82KE-M/edit?usp=sharing">
-                <img src="./images/gdocs-logo.png" alt="Resume Link"
-                class="logo-img"><p>Resume</p></a>
-            </div>
-        </div>
+        <img src="./images/headshot.jpeg" id="headshot"
+        alt="Headshot">
     </div>
     <div class="about-me">
         <em>I was born and raised in Maryland, attending UChicago through the

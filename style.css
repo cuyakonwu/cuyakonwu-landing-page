@@ -27,24 +27,6 @@ body {
     flex: 0;
 }
 
-.information {
-    display: flex;
-    flex-direction: column;
-    margin: 0;
-}
-
-.logos {
-    display: flex;
-    justify-content: space-around;
-    padding: 0px 100px
-    margin: 0;
-}
-
-.logo-img {
-    width: 200px;
-    height: auto;
-}
-
 .about-me, .call-to-action {
     padding: 30px 100px;
 }
@@ -105,4 +87,20 @@ button {
 a{
     text-decoration: none;
     color: #1F2937;
+}
+
+.landing-pics {
+    background: transparent;
+    width: 35px;
+    height: auto;
+    margin: 0px 5px;
+  }
+
+#images {
+    display: flex;
+    justify-content: center;
+}
+
+.landing-text {
+    text-align: center;
 }
