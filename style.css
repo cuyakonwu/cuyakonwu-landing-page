@@ -27,7 +27,7 @@ body {
     flex: 0;
 }
 
-.about-me, .call-to-action {
+.fun-facts, .call-to-action {
     padding: 30px 100px;
 }
 
@@ -66,7 +66,7 @@ button {
     align-self: center;
 }
 
-.about-me {
+.fun-facts {
     background-color: #E5E7EB;
     font-size: 28px;
     color: #1F2937;
