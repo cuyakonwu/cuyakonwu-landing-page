@@ -12,7 +12,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: #1F2937;
     padding: 0 100px;
 }
 
@@ -25,6 +24,7 @@ body {
     height: auto;
     width: auto;
     flex: 0;
+    padding-top: 30px;
 }
 
 .fun-facts, .call-to-action {
@@ -34,16 +34,6 @@ body {
 .call-to-action {
     display: flex;
     align-items: center;
-}
-
-button {
-    height: auto;
-    width: auto;
-    background-color: #3882F6;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 5px 18px;
 }
 
 #awesome {
@@ -75,23 +65,22 @@ button {
 
 .footer {
     text-align: center;
-    background-color: #1F2937;
     color: #F9FAF8;
     padding: 30px 0px;
+    justify-content: flex-end;
+}
+
+.header, .footer, .hero-main {
+    background-color: #283c29;
 }
 
 .link-name {
     text-align: center;
 }
 
-a{
-    text-decoration: none;
-    color: #1F2937;
-}
-
 .landing-pics {
     background: transparent;
-    width: 35px;
+    width: 25px;
     height: auto;
     margin: 0px 5px;
   }
@@ -103,4 +92,15 @@ a{
 
 .landing-text {
     text-align: center;
+}
+
+#resume-link {
+    text-decoration: none;
+    color: white;
+}
+
+#resume-img {
+    width: 200px;
+    height: auto;
+    padding-bottom: 10px;
 }
