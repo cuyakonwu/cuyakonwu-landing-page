@@ -126,6 +126,7 @@ def powerlifting():
     if request.method == 'POST':
         try:
             sex = request.form.get('sex', 'M')
+            unit = request.form.get('unit', 'kg')
             age = float(request.form.get('age', 21))
             weight_class = request.form.get('weight_class', '120')
             squat = float(request.form.get('squat', 0))
@@ -133,8 +134,18 @@ def powerlifting():
             deadlift = float(request.form.get('deadlift', 0))
             total = squat + bench + deadlift
 
+            # Convert to kg for database calculations
+            kg_mult = 1.0 if unit == 'kg' else 0.45359237
+            lbs_mult = 1.0 if unit == 'kg' else 2.20462262
+
+            squat_kg = squat * kg_mult
+            bench_kg = bench * kg_mult
+            deadlift_kg = deadlift * kg_mult
+            total_kg = total * kg_mult
+
             form_state = {
                 'sex': sex,
+                'unit': unit,
                 'age': age,
                 'weight_class': weight_class,
                 'squat': squat,
@@ -183,31 +194,35 @@ def powerlifting():
 
             conn.close()
 
+            def convert_goals(goals_dict):
+                return {k: v * lbs_mult for k, v in goals_dict.items()}
+
             # Format data
             results = {
+                'unit': unit,
                 'squat': {
                     'val': squat,
-                    'global_pct': calculate_percentile(squat, global_squat_data),
-                    'age_pct': calculate_percentile(squat, age_squat_data),
-                    'goals': get_clean_goals(calculate_percentile(squat, age_squat_data), age_squat_data)
+                    'global_pct': calculate_percentile(squat_kg, global_squat_data),
+                    'age_pct': calculate_percentile(squat_kg, age_squat_data),
+                    'goals': convert_goals(get_clean_goals(calculate_percentile(squat_kg, age_squat_data), age_squat_data))
                 },
                 'bench': {
                     'val': bench,
-                    'global_pct': calculate_percentile(bench, global_bench_data),
-                    'age_pct': calculate_percentile(bench, age_bench_data),
-                    'goals': get_clean_goals(calculate_percentile(bench, age_bench_data), age_bench_data)
+                    'global_pct': calculate_percentile(bench_kg, global_bench_data),
+                    'age_pct': calculate_percentile(bench_kg, age_bench_data),
+                    'goals': convert_goals(get_clean_goals(calculate_percentile(bench_kg, age_bench_data), age_bench_data))
                 },
                 'deadlift': {
                     'val': deadlift,
-                    'global_pct': calculate_percentile(deadlift, global_deadlift_data),
-                    'age_pct': calculate_percentile(deadlift, age_deadlift_data),
-                    'goals': get_clean_goals(calculate_percentile(deadlift, age_deadlift_data), age_deadlift_data)
+                    'global_pct': calculate_percentile(deadlift_kg, global_deadlift_data),
+                    'age_pct': calculate_percentile(deadlift_kg, age_deadlift_data),
+                    'goals': convert_goals(get_clean_goals(calculate_percentile(deadlift_kg, age_deadlift_data), age_deadlift_data))
                 },
                 'total': {
                     'val': total,
-                    'global_pct': calculate_percentile(total, global_total_data),
-                    'age_pct': calculate_percentile(total, age_total_data),
-                    'goals': get_clean_goals(calculate_percentile(total, age_total_data), age_total_data)
+                    'global_pct': calculate_percentile(total_kg, global_total_data),
+                    'age_pct': calculate_percentile(total_kg, age_total_data),
+                    'goals': convert_goals(get_clean_goals(calculate_percentile(total_kg, age_total_data), age_total_data))
                 },
                 'age_class': target_age_class
             }

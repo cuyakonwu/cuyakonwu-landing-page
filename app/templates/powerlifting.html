@@ -37,12 +37,12 @@
         <div class="glass-card">
             <form method="POST" action="/powerlifting">
                 <div class="row g-3">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">Age</label>
                         <input type="number" step="0.5" class="form-control" name="age"
                             value="{{ form_state.age if form_state else 21 }}" required>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">Sex</label>
                         <select class="form-select" name="sex" id="sexSelect" required>
                             <option value="M" {% if form_state and form_state.sex=='M' %}selected{% elif not form_state
@@ -51,24 +51,33 @@
                             </option>
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
+                        <label class="form-label">Unit</label>
+                        <select class="form-select" name="unit" id="unitSelect" required>
+                            <option value="kg" {% if form_state and form_state.unit=='kg' %}selected{% elif not
+                                form_state %}selected{% endif %}>kg</option>
+                            <option value="lbs" {% if form_state and form_state.unit=='lbs' %}selected{% endif %}>lbs
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
                         <label class="form-label">Weight Class (kg)</label>
                         <select class="form-select" name="weight_class" id="weightClassSelect" required>
                             <!-- JS handles population -->
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Squat (kg)</label>
+                        <label class="form-label" id="squatLabel">Squat (kg)</label>
                         <input type="number" step="any" class="form-control" name="squat"
                             value="{{ form_state.squat if form_state else '' }}" required>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Bench (kg)</label>
+                        <label class="form-label" id="benchLabel">Bench (kg)</label>
                         <input type="number" step="any" class="form-control" name="bench"
                             value="{{ form_state.bench if form_state else '' }}" required>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Deadlift (kg)</label>
+                        <label class="form-label" id="deadliftLabel">Deadlift (kg)</label>
                         <input type="number" step="any" class="form-control" name="deadlift"
                             value="{{ form_state.deadlift if form_state else '' }}" required>
                     </div>
@@ -91,7 +100,7 @@
             ('Total', results.total)] %}
             <div class="col-md-6">
                 <div class="glass-card dash-card h-100 mb-0">
-                    <h3>{{ lift }} <span>Current: {{ data.val }} kg</span></h3>
+                    <h3>{{ lift }} <span>Current: {{ data.val }} {{ results.unit }}</span></h3>
 
                     <div class="dash-stats">
                         <div class="stat-box">
@@ -111,11 +120,11 @@
                         {% set diff = val - data.val %}
                         <div class="goal-item">
                             <div class="goal-percent">{{ pct }}</div>
-                            <div class="goal-val">{{ "%.1f"|format(val) }} kg</div>
+                            <div class="goal-val">{{ "%.1f"|format(val) }} {{ results.unit }}</div>
                             {% if diff <= 0 %} <div class="goal-diff matched">MATCHED
                         </div>
                         {% else %}
-                        <div class="goal-diff">+{{ "%.1f"|format(diff) }} kg</div>
+                        <div class="goal-diff">+{{ "%.1f"|format(diff) }} {{ results.unit }}</div>
                         {% endif %}
                     </div>
                     {% endfor %}
@@ -150,41 +159,61 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const weightClasses = {
-            'M': ['53', '59', '66', '74', '83', '93', '105', '120', '120+'],
-            'F': ['43', '47', '52', '57', '63', '69', '76', '84', '84+']
-        };
+        document.addEventListener('DOMContentLoaded', function () {
+            const sexSelect = document.getElementById('sexSelect');
+            const weightClassSelect = document.getElementById('weightClassSelect');
+            const unitSelect = document.getElementById('unitSelect');
 
-        const sexSelect = document.getElementById('sexSelect');
-        const weightClassSelect = document.getElementById('weightClassSelect');
+            function updateLabels() {
+                const unit = unitSelect ? unitSelect.value : 'kg';
+                const squatLabel = document.getElementById('squatLabel');
+                const benchLabel = document.getElementById('benchLabel');
+                const deadliftLabel = document.getElementById('deadliftLabel');
+                if (squatLabel) squatLabel.textContent = `Squat (${unit})`;
+                if (benchLabel) benchLabel.textContent = `Bench (${unit})`;
+                if (deadliftLabel) deadliftLabel.textContent = `Deadlift (${unit})`;
+            }
+            if (unitSelect) {
+                unitSelect.addEventListener('change', updateLabels);
+                updateLabels();
+            }
 
-        function updateWeightClasses() {
-            const sex = sexSelect.value;
-            const classes = weightClasses[sex];
+            const weightClasses = {
+                'M': ['53', '59', '66', '74', '83', '93', '105', '120', '120+'],
+                'F': ['43', '47', '52', '57', '63', '69', '76', '84', '84+']
+            };
 
-            weightClassSelect.innerHTML = '';
-            classes.forEach(cls => {
-                const option = document.createElement('option');
-                option.value = cls;
-                option.textContent = cls + '.0' + (cls.includes('+') ? '' : '');
+            function updateWeightClasses() {
+                if (!sexSelect || !weightClassSelect) return;
+                const sex = sexSelect.value;
+                const classes = weightClasses[sex];
 
-                // Keep the target weight class selected if form state exists
-                const targetClass = "{{ form_state.weight_class if form_state else '' }}";
+                weightClassSelect.innerHTML = '';
+                classes.forEach(cls => {
+                    const option = document.createElement('option');
+                    option.value = cls;
+                    option.textContent = cls + '.0' + (cls.includes('+') ? '' : '');
 
-                if (targetClass && cls === targetClass) {
-                    option.selected = true;
-                } else if (!targetClass && (cls === '120' || cls === '84')) {
-                    option.selected = true;
-                }
+                    // Keep the target weight class selected if form state exists
+                    const targetClass = "{{ form_state.weight_class if form_state else '' }}";
 
-                weightClassSelect.appendChild(option);
-            });
-        }
+                    if (targetClass && cls === targetClass) {
+                        option.selected = true;
+                    } else if (!targetClass && (cls === '120' || cls === '84')) {
+                        option.selected = true;
+                    }
 
-        sexSelect.addEventListener('change', updateWeightClasses);
+                    weightClassSelect.appendChild(option);
+                });
+            }
 
-        // Initialize on load
-        updateWeightClasses();
+            if (sexSelect) {
+                sexSelect.addEventListener('change', updateWeightClasses);
+            }
+
+            // Initialize on load
+            updateWeightClasses();
+        });
     </script>
 </body>
 
