@@ -37,22 +37,21 @@
         <div class="glass-card">
             <form method="POST" action="/powerlifting">
                 <div class="row g-3">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label">Age</label>
                         <input type="number" step="0.5" class="form-control" name="age" value="21" required>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <label class="form-label">Biological Sex</label>
+                        <select class="form-select" name="sex" id="sexSelect" required>
+                            <option value="M" selected>Male</option>
+                            <option value="F">Female</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
                         <label class="form-label">Weight Class (kg)</label>
-                        <select class="form-select" name="weight_class" required>
-                            <option value="53">53.0</option>
-                            <option value="59">59.0</option>
-                            <option value="66">66.0</option>
-                            <option value="74">74.0</option>
-                            <option value="83">83.0</option>
-                            <option value="93">93.0</option>
-                            <option value="105">105.0</option>
-                            <option value="120" selected>120.0</option>
-                            <option value="120+">120.0+</option>
+                        <select class="form-select" name="weight_class" id="weightClassSelect" required>
+                            <!-- JS handles population -->
                         </select>
                     </div>
                     <div class="col-md-4">
@@ -137,6 +136,34 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const weightClasses = {
+            'M': ['53', '59', '66', '74', '83', '93', '105', '120', '120+'],
+            'F': ['43', '47', '52', '57', '63', '69', '76', '84', '84+']
+        };
+
+        const sexSelect = document.getElementById('sexSelect');
+        const weightClassSelect = document.getElementById('weightClassSelect');
+
+        function updateWeightClasses() {
+            const sex = sexSelect.value;
+            const classes = weightClasses[sex];
+
+            weightClassSelect.innerHTML = '';
+            classes.forEach(cls => {
+                const option = document.createElement('option');
+                option.value = cls;
+                option.textContent = cls + '.0' + (cls.includes('+') ? '' : '');
+                if (cls === '120' || cls === '84') option.selected = true;
+                weightClassSelect.appendChild(option);
+            });
+        }
+
+        sexSelect.addEventListener('change', updateWeightClasses);
+
+        // Initialize on load
+        updateWeightClasses();
+    </script>
 </body>
 
 </html>

@@ -125,6 +125,7 @@ def powerlifting():
     results = None
     if request.method == 'POST':
         try:
+            sex = request.form.get('sex', 'M')
             age = float(request.form.get('age', 21))
             weight_class = request.form.get('weight_class', '120')
             squat = float(request.form.get('squat', 0))
@@ -146,29 +147,29 @@ def powerlifting():
             cursor = conn.cursor()
 
             # Global
-            cursor.execute(f"SELECT Best3SquatKg FROM lifters WHERE WeightClassKg = ?", (weight_class,))
+            cursor.execute("SELECT Best3SquatKg FROM lifters WHERE WeightClassKg = ? AND Sex = ?", (weight_class, sex))
             global_squat_data = cursor.fetchall()
 
-            cursor.execute(f"SELECT Best3BenchKg FROM lifters WHERE WeightClassKg = ?", (weight_class,))
+            cursor.execute("SELECT Best3BenchKg FROM lifters WHERE WeightClassKg = ? AND Sex = ?", (weight_class, sex))
             global_bench_data = cursor.fetchall()
 
-            cursor.execute(f"SELECT Best3DeadliftKg FROM lifters WHERE WeightClassKg = ?", (weight_class,))
+            cursor.execute("SELECT Best3DeadliftKg FROM lifters WHERE WeightClassKg = ? AND Sex = ?", (weight_class, sex))
             global_deadlift_data = cursor.fetchall()
 
-            cursor.execute(f"SELECT TotalKg FROM lifters WHERE WeightClassKg = ?", (weight_class,))
+            cursor.execute("SELECT TotalKg FROM lifters WHERE WeightClassKg = ? AND Sex = ?", (weight_class, sex))
             global_total_data = cursor.fetchall()
 
             # Age specific
-            cursor.execute(f"SELECT Best3SquatKg FROM lifters WHERE WeightClassKg = ? AND Age >= ? AND Age <= ?", (weight_class, min_age, max_age))
+            cursor.execute("SELECT Best3SquatKg FROM lifters WHERE WeightClassKg = ? AND Sex = ? AND Age >= ? AND Age <= ?", (weight_class, sex, min_age, max_age))
             age_squat_data = cursor.fetchall()
 
-            cursor.execute(f"SELECT Best3BenchKg FROM lifters WHERE WeightClassKg = ? AND Age >= ? AND Age <= ?", (weight_class, min_age, max_age))
+            cursor.execute("SELECT Best3BenchKg FROM lifters WHERE WeightClassKg = ? AND Sex = ? AND Age >= ? AND Age <= ?", (weight_class, sex, min_age, max_age))
             age_bench_data = cursor.fetchall()
 
-            cursor.execute(f"SELECT Best3DeadliftKg FROM lifters WHERE WeightClassKg = ? AND Age >= ? AND Age <= ?", (weight_class, min_age, max_age))
+            cursor.execute("SELECT Best3DeadliftKg FROM lifters WHERE WeightClassKg = ? AND Sex = ? AND Age >= ? AND Age <= ?", (weight_class, sex, min_age, max_age))
             age_deadlift_data = cursor.fetchall()
 
-            cursor.execute(f"SELECT TotalKg FROM lifters WHERE WeightClassKg = ? AND Age >= ? AND Age <= ?", (weight_class, min_age, max_age))
+            cursor.execute("SELECT TotalKg FROM lifters WHERE WeightClassKg = ? AND Sex = ? AND Age >= ? AND Age <= ?", (weight_class, sex, min_age, max_age))
             age_total_data = cursor.fetchall()
 
             conn.close()
