@@ -133,6 +133,15 @@ def powerlifting():
             deadlift = float(request.form.get('deadlift', 0))
             total = squat + bench + deadlift
 
+            form_state = {
+                'sex': sex,
+                'age': age,
+                'weight_class': weight_class,
+                'squat': squat,
+                'bench': bench,
+                'deadlift': deadlift
+            }
+
             target_age_class = get_age_class(age)
             age_definitions = {
                 'Sub-Junior': (14, 18), 'Junior': (19, 23), 'Open': (24, 39),
@@ -206,4 +215,9 @@ def powerlifting():
         except Exception as e:
             results = {'error': str(e)}
 
-    return render_template('powerlifting.html', results=results, title="Live Project: IPF Percentile Calculator")
+    return render_template(
+        'powerlifting.html',
+        results=results,
+        title="Live Project: IPF Percentile Calculator",
+        form_state=form_state if request.method == 'POST' else None
+    )

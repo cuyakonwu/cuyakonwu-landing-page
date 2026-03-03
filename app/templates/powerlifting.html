@@ -39,13 +39,16 @@
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label class="form-label">Age</label>
-                        <input type="number" step="0.5" class="form-control" name="age" value="21" required>
+                        <input type="number" step="0.5" class="form-control" name="age"
+                            value="{{ form_state.age if form_state else 21 }}" required>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Sex</label>
                         <select class="form-select" name="sex" id="sexSelect" required>
-                            <option value="M" selected>Male</option>
-                            <option value="F">Female</option>
+                            <option value="M" {% if form_state and form_state.sex=='M' %}selected{% elif not form_state
+                                %}selected{% endif %}>Male</option>
+                            <option value="F" {% if form_state and form_state.sex=='F' %}selected{% endif %}>Female
+                            </option>
                         </select>
                     </div>
                     <div class="col-md-4">
@@ -56,15 +59,18 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Squat (kg)</label>
-                        <input type="number" step="2.5" class="form-control" name="squat" required>
+                        <input type="number" step="2.5" class="form-control" name="squat"
+                            value="{{ form_state.squat if form_state else '' }}" required>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Bench (kg)</label>
-                        <input type="number" step="2.5" class="form-control" name="bench" required>
+                        <input type="number" step="2.5" class="form-control" name="bench"
+                            value="{{ form_state.bench if form_state else '' }}" required>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Deadlift (kg)</label>
-                        <input type="number" step="2.5" class="form-control" name="deadlift" required>
+                        <input type="number" step="2.5" class="form-control" name="deadlift"
+                            value="{{ form_state.deadlift if form_state else '' }}" required>
                     </div>
                     <div class="col-12 text-center mt-4">
                         <button type="submit" class="btn btn-primary w-50 py-2">Calculate Percentiles & Goals</button>
@@ -154,7 +160,16 @@
                 const option = document.createElement('option');
                 option.value = cls;
                 option.textContent = cls + '.0' + (cls.includes('+') ? '' : '');
-                if (cls === '120' || cls === '84') option.selected = true;
+
+                // Keep the target weight class selected if form state exists
+                const targetClass = "{{ form_state.weight_class if form_state else '' }}";
+
+                if (targetClass && cls === targetClass) {
+                    option.selected = true;
+                } else if (!targetClass && (cls === '120' || cls === '84')) {
+                    option.selected = true;
+                }
+
                 weightClassSelect.appendChild(option);
             });
         }
