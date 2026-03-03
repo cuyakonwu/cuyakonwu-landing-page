@@ -116,8 +116,9 @@ def get_clean_goals(current_percentile, data_list):
 
     dist_dict = {}
     for p, v in zip(selected_percentiles, values):
-        dist_dict[f"{p}%"] = v
-    dist_dict["100% (WR)"] = max(clean_data)
+        top_pct = 100 - p
+        dist_dict[f"Top {top_pct:g}%"] = v
+    dist_dict["World Record"] = max(clean_data)
     return dist_dict
 
 @app.route('/powerlifting', methods=['GET', 'POST'])

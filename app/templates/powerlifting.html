@@ -30,7 +30,7 @@
     </nav>
 
     <div class="pl-container">
-        <h1 id="awesome" class="text-center mb-4">IPF Percentile Calculator</h1>
+        <h1 id="awesome" class="text-center mb-4">Powerlifting Percentile Calculator</h1>
         <p class="landing-text text-center mb-5">Built with Python, Pandas, and SQLite analyzing ~500k recorded lifts.
         </p>
 
@@ -95,11 +95,12 @@
 
                     <div class="dash-stats">
                         <div class="stat-box">
-                            <span class="stat-val">{{ "%.1f"|format(data.global_pct) }}%</span>
+                            <span class="stat-val">Top {{ "%.1f"|format(100 - data.global_pct) }}%</span>
                             <span class="stat-label">Global Rank</span>
                         </div>
                         <div class="stat-box">
-                            <span class="stat-val" style="color: var(--accent-color);">{{ "%.1f"|format(data.age_pct)
+                            <span class="stat-val" style="color: var(--accent-color);">Top {{ "%.1f"|format(100 -
+                                data.age_pct)
                                 }}%</span>
                             <span class="stat-label">{{ results.age_class }} Rank</span>
                         </div>
