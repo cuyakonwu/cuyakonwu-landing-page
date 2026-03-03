@@ -2,71 +2,119 @@
 <html lang="en">
 
 <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta property="og:title" content="Personal Portfolio">
-    <meta property="og:description" content="My Personal Portfolio">
-    <meta property="og:url" content="{{ url }}">
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta property="og:title" content="Personal Portfolio">
+  <meta property="og:description" content="My Personal Portfolio">
+  <meta property="og:url" content="{{ url }}">
 
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <script src="scripts.js" defer></script>
-    <link lang='sass' rel="stylesheet" href="./static/styles/main.css">
-    <link rel='icon' href='./static/img/favicon.ico' type='image/x-icon' />
-    <title>{{ title }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel='icon' href='./static/img/favicon.ico' type='image/x-icon' />
+  <title>{{ title }}</title>
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg bg-body-tertiary" class="navbar bg-dark border-bottom border-body" data-bs-theme="dark">
-        <div class="container-fluid">
-          <a class="navbar-brand" href="/">Conrad Uyakonwu</a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-              <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="/">Home</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="/about">About</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="/experience">Experience</a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </nav>
-    <div class="hero-main">
-        <div class="hero-text">
-        <h1 id="awesome" class="landing-text">Welcome To My Website</h1>
-        <p id="description" class="landing-text">
-            My name is Conrad Uyakonwu, I am a third-year at the University
-            of Chicago.
-        </p>
-        <span id="images">
-          <a href="https://github.com/cuyakonwu"><img class="landing-pics" src="/static/img/github-logo.png"
+  <nav class="navbar navbar-expand-lg border-bottom sticky-top" data-bs-theme="dark">
+    <div class="container-fluid px-4 px-lg-5">
+      <a class="navbar-brand" href="/">Conrad Uyakonwu</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="/">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/experience">Experience</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/powerlifting">Live Project</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="hero-main">
+    <div class="hero-text">
+      <h1 id="awesome">Welcome To My World</h1>
+      <p class="landing-text">
+        Hi, my name is Conrad Uyakonwu. I am a third-year Computer Science student at the University of Chicago,
+        specializing in Machine Learning, robust backend systems, and beautiful frontends.
+      </p>
+      <div id="images">
+        <a href="https://github.com/cuyakonwu"><img class="landing-pics" src="/static/img/github-logo.png"
             alt="github logo"></a>
-          <a href="https://www.linkedin.com/in/conrad-uyakonwu/"><img src="/static/img/linkedin-logo.png"
+        <a href="https://www.linkedin.com/in/conrad-uyakonwu/"><img src="/static/img/linkedin-logo.png"
             class="landing-pics" alt="linkedin logo"></a>
-          <a href="mailto:conraduyakonwu@gmail.com"><img class="landing-pics" src="static/img/envelope.png"
+        <a href="mailto:conraduyakonwu@gmail.com"><img class="landing-pics" src="static/img/envelope.png"
             alt="email"></a>
-          <a href="https://docs.google.com/document/d/12RKPHgFBtbc_EJfbsAZnumF4mtCi9s_tJLgaHcByKeo/edit?usp=sharing"
-            id="resume-link">
-            <img class="landing-pics" src="/static/img/text-file.png" alt="Resume"></a>
-        </span>
+        <a href="https://docs.google.com/document/d/12RKPHgFBtbc_EJfbsAZnumF4mtCi9s_tJLgaHcByKeo/edit?usp=sharing"
+          id="resume-link">
+          <img class="landing-pics" src="/static/img/text-file.png" alt="Resume">
+        </a>
+      </div>
+    </div>
+    <img src="/static/img/headshot.jpeg" id="headshot" alt="Conrad Headshot">
+  </div>
+
+  </div>
+
+  <div id="about-body" class="hero-main mt-5">
+    <div class="hero-text" style="width: 100%;">
+      <h1 id="awesome" style="margin-bottom: 30px;">About Me</h1>
+      <p>As a first-generation low-income immigrant from Nigeria, my journey
+        to The University of Chicago as a Questbridge Scholar in Computer
+        Science has been marked by resilience and determination. Transitioning
+        from public education in an underserved community to a prestigious
+        university has given me profound insights into educational disparities
+        and fueled my commitment to creating equitable opportunities.</p>
+
+      <p>My dedication to bridging educational gaps is evident in my work
+        with Code Your Dreams, where I developed a 15-hour AI course,
+        demonstrated a WhatsApp Chatbot, and presented the curriculum to
+        teachers in Burundi. My passion for service is reflected in over 300
+        hours of volunteer work, aiming to use my strengths to create opportunities
+        for the less fortunate and raise Black and Brown voices in my communities.</p>
+    </div>
+  </div>
+
+  <div class="fun-facts mt-5 mb-5">
+    <div class="hobbies">
+      <h2 style="color: var(--accent-color);">Hobbies</h2>
+      <div class="hobbies-list">
+        {% for hobby in hobbies %}
+        <div class="hobby d-flex align-items-center mb-3">
+          <div class="hobby-description">
+            <p>{{ hobby.description }}</p>
+          </div>
+          {% if hobby.img %}
+          <div class="hobby-image ms-auto">
+            <img src="{{ hobby.img }}" alt="Hobby Image" class="img-fluid"
+              style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px;">
+          </div>
+          {% endif %}
         </div>
-        <img src="/static/img/headshot.jpeg" id="headshot"
-        alt="Headshot">
+        {% endfor %}
+      </div>
     </div>
-    <div class="footer">
-        Conrad Uyakonwu 2024
+    <div class="visited mt-5">
+      <p style="color: var(--text-muted); font-size: 1.1rem;">I've also visited Nigeria</p>
+      <img id="nigeria" src="/static/img/nigeria_map.jpeg" alt="Map of Nigeria" style="border-radius: 8px;">
     </div>
+  </div>
+
+  <div class="footer">
+    Conrad Uyakonwu &copy;
+    <script>document.write(new Date().getFullYear())</script>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

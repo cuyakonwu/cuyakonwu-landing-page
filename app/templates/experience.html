@@ -2,73 +2,102 @@
 <html lang="en">
 
 <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta property="og:title" content="Personal Portfolio">
-    <meta property="og:description" content="My Personal Portfolio">
-    <meta property="og:url" content="{{ url }}">
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta property="og:title" content="Personal Portfolio">
+  <meta property="og:description" content="My Personal Portfolio">
+  <meta property="og:url" content="{{ url }}">
 
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <script src="scripts.js" defer></script>
-    <link lang='sass' rel="stylesheet" href="./static/styles/main.css">
-    <link rel='icon' href='./static/img/favicon.ico' type='image/x-icon' />
-    <title>{{ title }}</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <script src="scripts.js" defer></script>
+  <link lang='sass' rel="stylesheet" href="./static/styles/main.css">
+  <link rel='icon' href='./static/img/favicon.ico' type='image/x-icon' />
+  <title>{{ title }}</title>
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg bg-body-tertiary" class="navbar bg-dark border-bottom border-body" data-bs-theme="dark">
-        <div class="container-fluid">
-          <a class="navbar-brand" href="/">Conrad Uyakonwu</a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-              <li class="nav-item">
-                <a class="nav-link" href="/">Home</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="/about">About</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="/experience">Experience</a>
-              </li>
-            </ul>
+  <nav class="navbar navbar-expand-lg border-bottom sticky-top" data-bs-theme="dark">
+    <div class="container-fluid px-4 px-lg-5">
+      <a class="navbar-brand" href="/">Conrad Uyakonwu</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="/">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="/experience">Experience</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/powerlifting">Live Project</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div id="xp-body" class="hero-main">
+    <div class="hero-text">
+      <h2 class="xp-headers mb-4">Work Experience</h2>
+      <div class="accordion mb-5" id="workAccordion" data-bs-theme="dark">
+        {% for experience in work_experiences %}
+        <div class="accordion-item" style="background-color: var(--glass-bg); border-color: var(--glass-border);">
+          <h2 class="accordion-header" id="headingWork{{ loop.index }}">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+              data-bs-target="#collapseWork{{ loop.index }}" aria-expanded="false"
+              aria-controls="collapseWork{{ loop.index }}"
+              style="background-color: transparent; color: var(--text-main);">
+              <strong>{{ experience.title }}</strong>&nbsp;at {{ experience.company }}
+            </button>
+          </h2>
+          <div id="collapseWork{{ loop.index }}" class="accordion-collapse collapse"
+            aria-labelledby="headingWork{{ loop.index }}" data-bs-parent="#workAccordion">
+            <div class="accordion-body text-start" style="color: var(--text-muted);">
+              <p>{{ experience.description }}</p>
+              <p class="mb-0"><strong style="color: var(--accent-color);">Duration:</strong> {{ experience.duration }}
+              </p>
+            </div>
           </div>
         </div>
-      </nav>
-      <div id="xp-body" class="hero-main">
-        <div class="hero-text">
-            <h2 class="xp-headers">Work Experience</h2>
-            <ul>
-                {% for experience in work_experiences %}
-                <li>
-                    <h3 class="xp-headers"><em>{{ experience.title }}</em> at {{ experience.company }}</h3>
-                    <p>{{ experience.description }}</p>
-                    <p><strong>Duration:</strong> {{ experience.duration }}</p>
-                </li>
-                {% endfor %}
-            </ul>
-
-            <h2 class="xp-headers">Education</h2>
-            <ul>
-                {% for edu in education %}
-                <li>
-                    <h3 class="xp-headers">{{ edu.degree }} from {{ edu.institution }}</h3>
-                    <p>{{ edu.description }}</p>
-                    <p><strong>Year:</strong> {{ edu.year }}</p>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
+        {% endfor %}
       </div>
-      <div class="footer">
-        Conrad Uyakonwu 2024
+
+      <h2 class="xp-headers mb-4">Education</h2>
+      <div class="accordion" id="eduAccordion" data-bs-theme="dark">
+        {% for edu in education %}
+        <div class="accordion-item" style="background-color: var(--glass-bg); border-color: var(--glass-border);">
+          <h2 class="accordion-header" id="headingEdu{{ loop.index }}">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+              data-bs-target="#collapseEdu{{ loop.index }}" aria-expanded="false"
+              aria-controls="collapseEdu{{ loop.index }}"
+              style="background-color: transparent; color: var(--text-main);">
+              <strong>{{ edu.degree }}</strong>&nbsp;from {{ edu.institution }}
+            </button>
+          </h2>
+          <div id="collapseEdu{{ loop.index }}" class="accordion-collapse collapse"
+            aria-labelledby="headingEdu{{ loop.index }}" data-bs-parent="#eduAccordion">
+            <div class="accordion-body text-start" style="color: var(--text-muted);">
+              <p>{{ edu.description }}</p>
+              <p class="mb-0"><strong style="color: var(--accent-color);">Year:</strong> {{ edu.year }}</p>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
     </div>
-  </body>
+  </div>
+  <div class="footer">
+    Conrad Uyakonwu &copy;
+    <script>document.write(new Date().getFullYear())</script>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
