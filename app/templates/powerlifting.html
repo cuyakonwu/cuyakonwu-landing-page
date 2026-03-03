@@ -59,17 +59,17 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Squat (kg)</label>
-                        <input type="number" step="2.5" class="form-control" name="squat"
+                        <input type="number" step="any" class="form-control" name="squat"
                             value="{{ form_state.squat if form_state else '' }}" required>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Bench (kg)</label>
-                        <input type="number" step="2.5" class="form-control" name="bench"
+                        <input type="number" step="any" class="form-control" name="bench"
                             value="{{ form_state.bench if form_state else '' }}" required>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Deadlift (kg)</label>
-                        <input type="number" step="2.5" class="form-control" name="deadlift"
+                        <input type="number" step="any" class="form-control" name="deadlift"
                             value="{{ form_state.deadlift if form_state else '' }}" required>
                     </div>
                     <div class="col-12 text-center mt-4">
@@ -95,14 +95,13 @@
 
                     <div class="dash-stats">
                         <div class="stat-box">
-                            <span class="stat-val">Top {{ "%.1f"|format(100 - data.global_pct) }}%</span>
-                            <span class="stat-label">Global Rank</span>
+                            <span class="stat-val">{{ "%.1f"|format(data.global_pct) }}</span>
+                            <span class="stat-label">Global Percentile</span>
                         </div>
                         <div class="stat-box">
-                            <span class="stat-val" style="color: var(--accent-color);">Top {{ "%.1f"|format(100 -
-                                data.age_pct)
-                                }}%</span>
-                            <span class="stat-label">{{ results.age_class }} Rank</span>
+                            <span class="stat-val" style="color: var(--accent-color);">{{ "%.1f"|format(data.age_pct)
+                                }}</span>
+                            <span class="stat-label">{{ results.age_class }} Percentile</span>
                         </div>
                     </div>
 
@@ -130,6 +129,13 @@
     </div>
 
     <div class="footer mt-5">
+        <p class="mb-3"
+            style="font-size: 0.95rem; line-height: 1.5; color: var(--text-muted); max-width: 800px; margin: 0 auto;">
+            <strong>Methodology:</strong> Calculations are generated from a custom dataset of
+            exclusively drug-tested federations. The rankings consider only Full Power (SBD) meets, utilizing each
+            athlete's single best recorded performance across all their competitions to ensure accurate percentile
+            tracking.
+        </p>
         <p class="mb-2">
             This page uses data from the OpenPowerlifting project, <a href="https://www.openpowerlifting.org"
                 target="_blank" rel="noopener noreferrer"

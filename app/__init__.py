@@ -116,8 +116,7 @@ def get_clean_goals(current_percentile, data_list):
 
     dist_dict = {}
     for p, v in zip(selected_percentiles, values):
-        top_pct = 100 - p
-        dist_dict[f"Top {top_pct:g}%"] = v
+        dist_dict[f"{p:g}th Percentile"] = v
     dist_dict["World Record"] = max(clean_data)
     return dist_dict
 
