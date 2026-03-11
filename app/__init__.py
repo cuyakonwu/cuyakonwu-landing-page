@@ -3,14 +3,9 @@ import csv
 import io
 from datetime import datetime
 import numpy as np
-from scipy.stats import chi2
-from scipy.optimize import minimize
 from flask import Flask, render_template, request
 from dotenv import load_dotenv
 
-def huber_loss(residual, epsilon=1.35):
-    abs_r = np.abs(residual)
-    return np.where(abs_r <= epsilon, 0.5 * residual**2, epsilon * abs_r - 0.5 * epsilon**2)
 
 load_dotenv()
 app = Flask(__name__)
@@ -91,7 +86,6 @@ def experience():
 
 
 import sqlite3
-import numpy as np
 
 def get_age_class(age):
     if 14 <= age <= 18: return 'Sub-Junior'
