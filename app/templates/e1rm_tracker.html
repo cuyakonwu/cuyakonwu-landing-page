@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta property="og:title" content="Personal Portfolio">
+    <meta property="og:description" content="My Personal Portfolio">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link lang='sass' rel="stylesheet" href="./static/styles/main.css">
+    <link rel='icon' href='./static/img/favicon.ico' type='image/x-icon' />
+    <title>{{ title }}</title>
+
+    <!-- Add Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+    <style>
+        .tracker-card {
+            background-color: var(--glass-bg, rgba(255, 255, 255, 0.05));
+            border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
+            border-radius: 10px;
+            padding: 20px;
+            color: var(--text-main, #ffffff);
+        }
+
+        /* Override Bootstrap blue pills to be custom yellow outlines */
+        .nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+            background-color: transparent !important;
+            border: 2px solid #ffd93d !important;
+            color: #ffd93d !important;
+            font-weight: 500;
+        }
+
+        .nav-pills .nav-link {
+            border: 2px solid transparent;
+            color: var(--text-main) !important;
+            margin: 0 5px;
+        }
+        
+        .nav-pills .nav-link:hover {
+            color: #ffd93d !important;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg border-bottom sticky-top" data-bs-theme="dark">
+        <div class="container-fluid px-4 px-lg-5">
+            <a class="navbar-brand" href="/">Conrad Uyakonwu</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/experience">Experience</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/powerlifting">Live Project</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/e1rm_tracker">e1RM Tracker</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero-main mt-5 mb-5" style="max-width: 900px; margin: 0 auto; color: var(--text-main);">
+        <div class="hero-text text-start" style="width: 100%;">
+            <h1 id="awesome" class="mb-4">E1RM Progress Tracker</h1>
+            <p style="color: var(--text-muted);">
+                Input your Top 10 e1RM sets for Squat, Bench, and Deadlift manually below, or import a <code>strong.csv</code> file to auto-populate your mathematically best sets instantly!
+            </p>
+
+            <div class="tracker-card mb-4 text-center">
+                <input type="file" id="csvFile" accept=".csv" class="d-none">
+                <button type="button" class="btn btn-outline-info" onclick="document.getElementById('csvFile').click()">
+                    Import strong.csv Data
+                </button>
+                <div id="uploadStatus" class="mt-2 text-muted small"></div>
+            </div>
+
+            <form method="POST" id="e1rmForm">
+                <div class="text-center mb-5">
+                    <button type="submit" id="analyzeBtn" class="btn btn-primary btn-lg px-5 shadow border-0" style="background-color: var(--accent-color); color: #000; transition: transform 0.2s;">
+                        <strong>Generate RPE Tables</strong>
+                    </button>
+                </div>
+                
+                <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="pills-squat-tab" data-bs-toggle="pill" data-bs-target="#pills-squat" type="button" role="tab" aria-controls="pills-squat" aria-selected="true" style="color: var(--text-main);">Squat</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pills-bench-tab" data-bs-toggle="pill" data-bs-target="#pills-bench" type="button" role="tab" aria-controls="pills-bench" aria-selected="false" style="color: var(--text-main);">Bench Press</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pills-deadlift-tab" data-bs-toggle="pill" data-bs-target="#pills-deadlift" type="button" role="tab" aria-controls="pills-deadlift" aria-selected="false" style="color: var(--text-main);">Deadlift</button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content tracker-card mb-4" id="pills-tabContent">
+                    {% for lift in ['squat', 'bench', 'deadlift'] %}
+                    <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="pills-{{ lift }}" role="tabpanel" aria-labelledby="pills-{{ lift }}-tab">
+                        <h4 class="mb-3 text-capitalize" style="color: var(--accent-color);">{{ lift }} - Top 10 Sets</h4>
+                        <table class="table table-dark table-borderless text-center align-middle">
+                            <thead>
+                                <tr style="color: var(--text-muted);">
+                                    <th>#</th>
+                                    <th>Weight</th>
+                                    <th>Reps</th>
+                                    <th>RPE</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i in range(1, 11) %}
+                                <tr>
+                                    <td>{{ i }}</td>
+                                    <td><input type="number" step="any" class="form-control bg-dark text-light border-secondary text-center" name="{{ lift }}_weight_{{ i }}" id="{{ lift }}_weight_{{ i }}" value="{% if form_data %}{{ form_data.get(lift + '_weight_' ~ i|string, '') }}{% endif %}"></td>
+                                    <td><input type="number" step="any" class="form-control bg-dark text-light border-secondary text-center" name="{{ lift }}_reps_{{ i }}" id="{{ lift }}_reps_{{ i }}" value="{% if form_data %}{{ form_data.get(lift + '_reps_' ~ i|string, '') }}{% endif %}"></td>
+                                    <td><input type="number" step="any" class="form-control bg-dark text-light border-secondary text-center" name="{{ lift }}_rpe_{{ i }}" id="{{ lift }}_rpe_{{ i }}" value="{% if form_data %}{{ form_data.get(lift + '_rpe_' ~ i|string, '') }}{% endif %}"></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endfor %}
+                </div>
+            </form>
+
+            {% if error %}
+            <div class="alert alert-danger" role="alert" style="background-color: rgba(220, 53, 69, 0.2); border-color: rgba(220, 53, 69, 0.4); color: #ffb3b3;">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            {% if results %}
+            <h2 class="mb-5 text-center mt-5" style="color: var(--accent-color);">Personalized RPE Computations</h2>
+            
+            <div id="resultsContent">
+                {% for lift, res in results.items() %}
+                <div class="mb-5" id="res-{{ lift }}">
+                    <h3 class="mb-4 text-capitalize border-bottom pb-2" style="color: var(--text-main); border-color: rgba(255,255,255,0.1) !important;">{{ lift }}</h3>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="tracker-card h-100">
+                                <h4 class="mb-3" style="color: var(--accent-color);">Analytics</h4>
+                                <div class="p-3 mb-3 text-center" style="background-color: rgba(0,0,0,0.3); border-radius: 8px;">
+                                    <code class="fs-5" style="color: #64ffda;">Baseline {{ lift|capitalize }} e1RM = {{ "%.2f"|format(res.estimated_1rm) }}</code>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="tracker-card h-100">
+                                <h4 class="mb-3" style="color: var(--accent-color);">Summary</h4>
+                                <ul class="list-unstyled mb-0" style="color: var(--text-muted);">
+                                    <li class="d-flex justify-content-between mb-2">
+                                        <span>Total Valid Sets Computed:</span>
+                                        <span class="text-light fw-bold">{{ res.data_points }} / 10</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tracker-card mb-5">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-striped table-hover align-middle text-center mb-0" style="border: 1px solid var(--glass-border);">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" style="background-color: rgba(255,255,255,0.05); color: var(--accent-color); white-space: nowrap;">Reps \ RPE</th>
+                                        {% set rpe_range = ['10.0','9.5','9.0','8.5','8.0','7.5','7.0','6.5','6.0','5.5','5.0'] %}
+                                        {% for rpe in rpe_range %}
+                                        <th scope="col" style="background-color: rgba(255,255,255,0.05); white-space: nowrap;">{{ rpe }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in res.rpe_table %}
+                                    <tr>
+                                        <th scope="row" style="background-color: rgba(255,255,255,0.02); color: var(--accent-color);">{{ row.reps }}</th>
+                                        {% for rpe in rpe_range %}
+                                        <td style="white-space: nowrap; color: {% if row.is_estimated[rpe] %}rgba(255,255,255,0.4){% elif row.rpe_values[rpe] >= 90 %}#ff6b6b{% elif row.rpe_values[rpe] >= 80 %}#ffd93d{% else %}#64ffda{% endif %};">
+                                            {% if row.is_estimated[rpe] %}
+                                            <span class="fst-italic">{{ "%.1f"|format(row.weights[rpe]) }}</span> <br>
+                                            <small style="opacity: 0.5;">({{ "%.1f"|format(row.rpe_values[rpe]) }}%)</small>
+                                            {% else %}
+                                            <span class="fw-bold">{{ "%.1f"|format(row.weights[rpe]) }}</span> <br>
+                                            <small style="opacity: 0.7;">({{ "%.1f"|format(row.rpe_values[rpe]) }}%)</small>
+                                            {% endif %}
+                                        </td>
+                                        {% endfor %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="tracker-card mb-5">
+                        <h4 class="mb-3 text-center" style="color: var(--accent-color);">RPE Curves vs. Target Inputs</h4>
+                        <canvas id="chart-{{ lift }}" height="100"></canvas>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if results %}
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    const resultsContent = document.getElementById('resultsContent');
+                    if (resultsContent) {
+                        resultsContent.scrollIntoView({ behavior: 'smooth' });
+                    }
+
+                    const resultsData = {{ results | tojson | safe }};
+                    
+                    Chart.defaults.color = 'rgba(255, 255, 255, 0.7)';
+                    Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+
+                    Object.keys(resultsData).forEach(lift => {
+                        const res = resultsData[lift];
+                        const ctx = document.getElementById(`chart-${lift}`);
+                        if (!ctx) return;
+
+                        const rpeRange = ['10.0','9.5','9.0','8.5','8.0','7.5','7.0','6.5','6.0','5.5','5.0'];
+                        const rpeColors = {
+                            '10.0': '#ff0000', '9.5': '#ff3333', '9.0': '#ff6b6b',
+                            '8.5': '#ff9999', '8.0': '#ffd93d', '7.5': '#ffe066',
+                            '7.0': '#fce883', '6.5': '#b8e994', '6.0': '#64ffda',
+                            '5.5': '#48dbfb', '5.0': '#0abde3'
+                        };
+
+                        const datasets = [];
+                        
+                        rpeRange.forEach(rpe => {
+                            const dataPoints = res.rpe_table.map(row => ({
+                                x: row.reps,
+                                y: row.weights[rpe]
+                            }));
+                            
+                            datasets.push({
+                                type: 'line',
+                                label: `RPE ${rpe}`,
+                                data: dataPoints,
+                                borderColor: rpeColors[rpe] || '#ffffff',
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                tension: 0.1,
+                                fill: false
+                            });
+                        });
+
+                        const scatterPoints = (res.original_data || []).map(d => ({
+                            x: d.reps,
+                            y: d.weight,
+                            rpe: d.rpe
+                        }));
+
+                        datasets.push({
+                            type: 'scatter',
+                            label: 'Logged Sets',
+                            data: scatterPoints,
+                            backgroundColor: '#ffffff',
+                            borderColor: '#ffffff',
+                            borderWidth: 1,
+                            pointRadius: 6,
+                            pointHoverRadius: 8
+                        });
+
+                        new Chart(ctx, {
+                            data: { datasets: datasets },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                if (context.dataset.type === 'scatter') {
+                                                    const pt = context.raw;
+                                                    return `Logged: ${pt.y} (Reps: ${pt.x}, RPE: ${pt.rpe})`;
+                                                }
+                                                return `${context.dataset.label}: ${context.raw.y.toFixed(1)} (Reps: ${context.raw.x})`;
+                                            }
+                                        }
+                                    },
+                                    legend: {
+                                        position: 'top',
+                                        labels: { usePointStyle: true }
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        type: 'linear',
+                                        position: 'bottom',
+                                        title: { display: true, text: 'Reps' },
+                                        min: 1,
+                                        max: 10,
+                                        ticks: { stepSize: 1 }
+                                    },
+                                    y: {
+                                        title: { display: true, text: 'Weight' }
+                                    }
+                                }
+                            }
+                        });
+                    });
+                });
+            </script>
+            {% endif %}
+
+            <script>
+                document.getElementById('csvFile').addEventListener('change', function(e) {
+                    if (this.files.length === 0) return;
+                    
+                    const file = this.files[0];
+                    const formData = new FormData();
+                    formData.append('csvFile', file);
+                    
+                    const status = document.getElementById('uploadStatus');
+                    status.innerText = 'Parsing CSV and extracting Top 10 sets...';
+                    
+                    fetch('/parse_csv', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            status.innerHTML = `<span class="text-danger">Error: ${data.error}</span>`;
+                            return;
+                        }
+                        
+                        ['squat', 'bench', 'deadlift'].forEach(lift => {
+                            const sets = data[lift];
+                            if (sets) {
+                                for(let i=0; i < sets.length; i++) {
+                                    if(i >= 10) break;
+                                    const row = i + 1;
+                                    document.getElementById(`${lift}_weight_${row}`).value = sets[i].weight;
+                                    document.getElementById(`${lift}_reps_${row}`).value = sets[i].reps;
+                                    document.getElementById(`${lift}_rpe_${row}`).value = sets[i].rpe;
+                                }
+                            }
+                        });
+                        
+                        status.innerHTML = '<span class="text-success fw-bold">Import successful! Review the grids below, then hit Generate RPE Tables.</span>';
+                        
+                        // Briefly shake the analyze button to draw attention
+                        const btn = document.getElementById('analyzeBtn');
+                        if(btn) {
+                            btn.style.transform = 'scale(1.1)';
+                            setTimeout(() => btn.style.transform = 'scale(1)', 300);
+                        }
+                    })
+                    .catch(error => {
+                        status.innerHTML = `<span class="text-danger">Failed to process file.</span>`;
+                        console.error('Error:', error);
+                    });
+                });
+            </script>
+            {% if not results %}
+            <div style="height: 50px;"></div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="footer text-center mt-5 mb-3" style="color: var(--text-muted);">
+        Conrad Uyakonwu &copy;
+        <script>document.write(new Date().getFullYear())</script>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

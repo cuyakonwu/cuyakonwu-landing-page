@@ -1,6 +1,16 @@
 import os
+import csv
+import io
+from datetime import datetime
+import numpy as np
+from scipy.stats import chi2
+from scipy.optimize import minimize
 from flask import Flask, render_template, request
 from dotenv import load_dotenv
+
+def huber_loss(residual, epsilon=1.35):
+    abs_r = np.abs(residual)
+    return np.where(abs_r <= epsilon, 0.5 * residual**2, epsilon * abs_r - 0.5 * epsilon**2)
 
 load_dotenv()
 app = Flask(__name__)
@@ -236,3 +246,203 @@ def powerlifting():
         title="Live Project: IPF Percentile Calculator",
         form_state=form_state if request.method == 'POST' else None
     )
+from flask import jsonify
+import io, csv
+
+
+# Standard Tuchscherer/RTS RPE percentage table
+# Maps (reps, RPE) -> fraction of 1RM
+# Source: Mike Tuchscherer's Reactive Training Systems
+STANDARD_RPE_PCT = {}
+_rpe_base = {
+    # Reps: {RPE: %1RM}
+    1:  {10: 1.000, 9.5: 0.978, 9: 0.955, 8.5: 0.939, 8: 0.922, 7.5: 0.907, 7: 0.892, 6.5: 0.878, 6: 0.863, 5.5: 0.849, 5: 0.834},
+    2:  {10: 0.955, 9.5: 0.939, 9: 0.922, 8.5: 0.907, 8: 0.892, 7.5: 0.878, 7: 0.863, 6.5: 0.849, 6: 0.834, 5.5: 0.820, 5: 0.807},
+    3:  {10: 0.922, 9.5: 0.907, 9: 0.892, 8.5: 0.878, 8: 0.863, 7.5: 0.849, 7: 0.834, 6.5: 0.820, 6: 0.807, 5.5: 0.793, 5: 0.780},
+    4:  {10: 0.892, 9.5: 0.878, 9: 0.863, 8.5: 0.849, 8: 0.834, 7.5: 0.820, 7: 0.807, 6.5: 0.793, 6: 0.780, 5.5: 0.766, 5: 0.753},
+    5:  {10: 0.863, 9.5: 0.849, 9: 0.834, 8.5: 0.820, 8: 0.807, 7.5: 0.793, 7: 0.780, 6.5: 0.766, 6: 0.753, 5.5: 0.739, 5: 0.726},
+    6:  {10: 0.834, 9.5: 0.820, 9: 0.807, 8.5: 0.793, 8: 0.780, 7.5: 0.766, 7: 0.753, 6.5: 0.739, 6: 0.726, 5.5: 0.707, 5: 0.694},
+    7:  {10: 0.807, 9.5: 0.793, 9: 0.780, 8.5: 0.766, 8: 0.753, 7.5: 0.739, 7: 0.726, 6.5: 0.707, 6: 0.694, 5.5: 0.681, 5: 0.668},
+    8:  {10: 0.780, 9.5: 0.766, 9: 0.753, 8.5: 0.739, 8: 0.726, 7.5: 0.707, 7: 0.694, 6.5: 0.681, 6: 0.668, 5.5: 0.655, 5: 0.642},
+    9:  {10: 0.753, 9.5: 0.739, 9: 0.726, 8.5: 0.707, 8: 0.694, 7.5: 0.681, 7: 0.668, 6.5: 0.655, 6: 0.642, 5.5: 0.629, 5: 0.618},
+    10: {10: 0.726, 9.5: 0.707, 9: 0.694, 8.5: 0.681, 8: 0.668, 7.5: 0.655, 7: 0.642, 6.5: 0.629, 6: 0.618, 5.5: 0.605, 5: 0.590},
+}
+for reps, rpe_dict in _rpe_base.items():
+    for rpe, pct in rpe_dict.items():
+        STANDARD_RPE_PCT[(reps, rpe)] = pct
+
+def _get_rpe_pct(reps, rpe):
+    """Look up the standard %1RM for a given (reps, RPE) combo, with interpolation."""
+    reps_clamped = max(1, min(10, int(round(reps))))
+    rpe_clamped = max(5.0, min(10.0, rpe))
+    # Snap RPE to nearest 0.5
+    rpe_snapped = round(rpe_clamped * 2) / 2
+    return STANDARD_RPE_PCT.get((reps_clamped, rpe_snapped), 0.75)
+
+def generate_rpe_table(data):
+    if not data or len(data) < 2: return None
+    
+    # Step 1: Back-calculate each set's implied e1RM using standard RPE percentages
+    e1rm_estimates = []
+    for d in data:
+        reps = d['reps']
+        rpe = d['rpe']
+        weight = d['weight']
+        pct = _get_rpe_pct(reps, rpe)
+        if pct > 0:
+            implied_e1rm = weight / pct
+            # Weight heavier toward low-rep sets (more reliable for 1RM estimation)
+            reliability_weight = 1.0 / max(reps, 1)
+            e1rm_estimates.append((implied_e1rm, reliability_weight))
+    
+    if not e1rm_estimates:
+        return None
+    
+    # Step 2: Compute weighted average e1RM
+    total_weight = sum(w for _, w in e1rm_estimates)
+    projected_1rm = sum(e * w for e, w in e1rm_estimates) / total_weight
+    
+    # Step 3: Generate RPE table using standard percentages applied to the averaged e1RM
+    rpe_range = [round(10.0 - 0.5 * i, 1) for i in range(11)]  # [10.0, 9.5, ..., 5.0]
+    
+    rpe_table = []
+    for reps in range(1, 11):
+        row_data = {'reps': reps, 'rpe_values': {}, 'weights': {}, 'is_estimated': {}}
+        for rpe in rpe_range:
+            rpe_key = str(rpe)
+            pct = _get_rpe_pct(reps, rpe)
+            estimated_weight = projected_1rm * pct
+            percentage = pct * 100
+
+            row_data['rpe_values'][rpe_key] = percentage
+            row_data['weights'][rpe_key] = estimated_weight
+            
+            # Mark cells where the user had an exact (reps, RPE) match
+            # but always show the model's predicted weight to ensure monotonicity
+            matching_actuals = [d['weight'] for d in data if d['reps'] == reps and d['rpe'] == rpe]
+            row_data['is_estimated'][rpe_key] = len(matching_actuals) == 0
+                
+        rpe_table.append(row_data)
+
+    return {
+        'data_points': len(data),
+        'estimated_1rm': projected_1rm,
+        'rpe_table': rpe_table,
+        'original_data': data,
+    }
+
+
+@app.route('/parse_csv', methods=['POST'])
+def parse_csv():
+    if 'csvFile' not in request.files:
+        return jsonify({'error': 'No file uploaded'})
+    file = request.files['csvFile']
+    if not file:
+        return jsonify({'error': 'Empty file'})
+
+    try:
+        stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
+        reader = csv.DictReader(stream)
+        lifts_data = {'squat': [], 'bench': [], 'deadlift': []}
+        
+        for row in reader:
+            exercise = row.get('Exercise Name', row.get('Nombre del ejercicio', '')).lower()
+            w_str = row.get('Weight', row.get('Peso', ''))
+            r_str = row.get('Reps', row.get('Rep.', ''))
+            rpe_str = row.get('RPE', '')
+            
+            target_lift = None
+            if ('squat' in exercise or 'sentadilla' in exercise) and 'split' not in exercise and 'goblet' not in exercise and 'bulgarian' not in exercise and 'hack' not in exercise and 'smith' not in exercise and 'front' not in exercise:
+                target_lift = 'squat'
+            elif ('bench' in exercise or 'press de banca' in exercise) and 'dumbbell' not in exercise and 'close grip' not in exercise and 'incline' not in exercise:
+                target_lift = 'bench'
+            elif ('deadlift' in exercise or 'peso muerto' in exercise) and 'romanian' not in exercise and 'stiff' not in exercise and 'dumbbell' not in exercise:
+                target_lift = 'deadlift'
+                
+            if target_lift and w_str and r_str and rpe_str:
+                try:
+                    w = float(w_str)
+                    r = float(r_str)
+                    rpe = float(rpe_str)
+                    if r > 0 and rpe <= 10:
+                        lifts_data[target_lift].append({
+                            'weight': round(w, 2), 
+                            'reps': round(r, 2), 
+                            'rpe': round(rpe, 2)
+                        })
+                except ValueError:
+                    pass
+                    
+        for lift in lifts_data:
+            for d in lifts_data[lift]:
+                d['temp_e1rm'] = d['weight'] * (1 + d['reps'] / 30.0) if d['reps'] > 1 else d['weight']
+            lifts_data[lift].sort(key=lambda x: x['temp_e1rm'], reverse=True)
+            for d in lifts_data[lift]:
+                del d['temp_e1rm']
+            lifts_data[lift] = lifts_data[lift][:10]
+            
+        return jsonify(lifts_data)
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
+@app.route('/e1rm_tracker', methods=['GET', 'POST'])
+def e1rm_tracker():
+    results = None
+    error = None
+    
+    if request.method == 'POST':
+        lifts = ['squat', 'bench', 'deadlift']
+        all_results = {}
+        has_any_data = False
+        
+        try:
+            for lift in lifts:
+                data = []
+                for i in range(1, 11):
+                    w_str = request.form.get(f'{lift}_weight_{i}')
+                    r_str = request.form.get(f'{lift}_reps_{i}')
+                    rpe_str = request.form.get(f'{lift}_rpe_{i}')
+                    
+                    if w_str and r_str and rpe_str:
+                        w = float(w_str)
+                        r = float(r_str)
+                        rpe = float(rpe_str)
+                        if r > 0 and rpe <= 10:
+                            data.append({'weight': w, 'reps': r, 'rpe': rpe})
+                            
+                if len(data) >= 2:
+                    has_any_data = True
+                    all_results[lift] = generate_rpe_table(data)
+                elif len(data) == 1:
+                    error = f"Not enough data to calculate {lift} (need at least 2 sets)."
+                    
+            if has_any_data:
+                results = all_results
+            elif not error:
+                error = "No valid data provided. Fill out at least 2 sets for one lift."
+                
+            # DEBUG LOG
+            with open('/tmp/debug_form_payload.txt', 'w') as f:
+                f.write(f"Has data: {has_any_data}\n")
+                f.write(f"Results keys: {results.keys() if results else None}\n")
+                f.write(f"Error: {error}\n")
+                f.write(str(dict(request.form)))
+                
+        except ValueError as e:
+            print("ValueError encountered:", e)
+            error = "Invalid numerical input found."
+        except Exception as e:
+            print("Exception encountered during regression:", e)
+            import traceback
+            traceback.print_exc()
+            error = f"Error computing regression: {str(e)}"
+            
+    return render_template(
+        'e1rm_tracker.html',
+        title="e1RM Tracker",
+        results=results,
+        error=error,
+        form_data=request.form if request.method == 'POST' else None
+    )
+
+

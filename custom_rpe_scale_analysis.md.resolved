@@ -1,0 +1,233 @@
+# Custom RPE Scale via Multivariate Regression from Strong.csv
+
+## Your Data at a Glance
+
+| Metric | Value |
+|--------|-------|
+| Total training sets | 5,603 |
+| Sets with RPE logged | 1,676 |
+| RPE values used | 6, 7, 8, 9, 10 |
+| Unique exercises with RPE | 70+ |
+| Date range | Apr 2022 – Aug 2025 |
+| Key compound lifts | Bench (140 sets), Squat (121), Deadlift (82) |
+
+## What a "Custom RPE Scale" Means
+
+A standard RPE chart (like the Tuchscherer/RTS table) maps **(reps, RPE) → %1RM** using population averages. A *custom* RPE scale learns **your personal** mapping from your actual training data. The goal is a model that, given your weight, reps, and other features, can more accurately predict what RPE you'll experience — or inversely, tell you what weight to use for a target reps-at-RPE prescription.
+
+## The Multivariate Regression Approach
+
+### Model 1: Predict RPE from set features (classification/regression)
+
+**Target variable:** RPE (6–10)
+
+**Feature candidates (independent variables):**
+
+| Feature | Column | Rationale |
+|---------|--------|-----------|
+| **Weight** | `Peso` | Heavier loads → higher RPE |
+| **Reps** | `Rep.` | More reps → higher RPE |
+| **%1RM (estimated)** | Derived | Normalizes across exercises — `weight / max_weight_seen` as a proxy |
+| **Set order** | `Orden de la serie` | Fatigue accumulates; set 4 is harder than set 1 at the same weight |
+| **Exercise category** | `Nombre del ejercicio` | Different movement patterns have different fatigue profiles |
+| **Volume prior sets** | Derived | Cumulative reps × weight within a session before this set |
+| **Days since last session** | Derived from `Fecha` | Recovery factor |
+| **Time of day** | Derived from `Fecha` | Morning vs. evening training effect |
+
+### Model 2: Predict %1RM from (Reps, RPE) — The Actual RPE Table
+
+This is the more practical model: **given (reps, RPE), what percentage of 1RM were you lifting?**
+
+```
+%1RM = f(reps, RPE, exercise_category, set_order, ...)
+```
+
+This directly produces your custom RPE chart.
+
+## Step-by-Step Implementation
+
+### Step 1: Data Preparation
+
+```python
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures, LabelEncoder
+from sklearn.model_selection import cross_val_score
+
+# Load data
+df = pd.read_csv('strong.csv')
+df.columns = ['Date', 'Workout', 'Duration', 'Exercise', 'SetOrder', 
+              'Weight', 'Reps', 'Distance', 'Seconds', 'Notes', 
+              'WorkoutNotes', 'RPE']
+
+# Filter to rows with RPE, weight > 0, reps > 0
+df_rpe = df[df['RPE'].notna() & (df['Weight'] > 0) & (df['Reps'] > 0)].copy()
+df_rpe['RPE'] = df_rpe['RPE'].astype(float)
+df_rpe['Weight'] = df_rpe['Weight'].astype(float)
+df_rpe['Reps'] = df_rpe['Reps'].astype(float)
+```
+
+### Step 2: Estimate E1RM per Exercise to Compute %1RM
+
+```python
+# For each exercise, estimate the "working 1RM" from the data
+# Use the highest Epley E1RM seen in a rolling window
+def epley_e1rm(weight, reps):
+    if reps == 1:
+        return weight
+    return weight * (1 + reps / 30)
+
+df_rpe['E1RM_epley'] = df_rpe.apply(
+    lambda r: epley_e1rm(r['Weight'], r['Reps']), axis=1
+)
+
+# Per exercise, use the max E1RM as the "true" 1RM anchor
+exercise_maxes = df_rpe.groupby('Exercise')['E1RM_epley'].max()
+df_rpe['Estimated1RM'] = df_rpe['Exercise'].map(exercise_maxes)
+df_rpe['PctOfMax'] = df_rpe['Weight'] / df_rpe['Estimated1RM']
+```
+
+### Step 3: Feature Engineering
+
+```python
+# Convert set order to numeric (handle 'Temporizador de descanso' etc.)
+df_rpe = df_rpe[df_rpe['SetOrder'].str.isnumeric()].copy()
+df_rpe['SetOrder'] = df_rpe['SetOrder'].astype(int)
+
+# Extract time features
+df_rpe['Date'] = pd.to_datetime(df_rpe['Date'])
+df_rpe['Hour'] = df_rpe['Date'].dt.hour
+
+# Cumulative fatigue: total reps*weight in prior sets of same workout+exercise
+df_rpe = df_rpe.sort_values(['Date', 'Exercise', 'SetOrder'])
+df_rpe['CumVolume'] = df_rpe.groupby(
+    [df_rpe['Date'].dt.date, 'Exercise']
+).apply(lambda g: (g['Weight'] * g['Reps']).cumsum() - g['Weight'] * g['Reps']
+).reset_index(drop=True)
+```
+
+### Step 4: Fit the Multivariate Regression
+
+```python
+# --- Model: %1RM = f(Reps, RPE) — produces your custom RPE table ---
+
+# Core features
+X = df_rpe[['Reps', 'RPE']].values
+y = df_rpe['PctOfMax'].values
+
+# Add polynomial/interaction terms (reps*RPE matters!)
+poly = PolynomialFeatures(degree=2, include_bias=False)
+X_poly = poly.fit_transform(X)
+
+model = LinearRegression()
+model.fit(X_poly, y)
+
+# Cross-validate
+scores = cross_val_score(model, X_poly, y, cv=5, scoring='r2')
+print(f"R² (5-fold CV): {scores.mean():.3f} ± {scores.std():.3f}")
+```
+
+### Step 5: Generate Your Custom RPE Table
+
+```python
+# Generate the table for reps 1-10, RPE 6-10
+print("\n=== YOUR CUSTOM RPE TABLE (%1RM) ===\n")
+print(f"{'Reps':<6}", end="")
+for rpe in [6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10]:
+    print(f"RPE {rpe:<6}", end="")
+print()
+
+for reps in range(1, 11):
+    print(f"{reps:<6}", end="")
+    for rpe in [6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10]:
+        X_pred = poly.transform([[reps, rpe]])
+        pct = model.predict(X_pred)[0]
+        print(f"{pct*100:>6.1f}%  ", end="")
+    print()
+```
+
+### Step 6: Enhanced Model with More Features
+
+```python
+# --- Full multivariate model including set order, exercise type, etc. ---
+
+# Encode exercise as a category
+le = LabelEncoder()
+df_rpe['ExerciseCode'] = le.fit_transform(df_rpe['Exercise'])
+
+# Feature matrix
+features = ['Reps', 'RPE', 'SetOrder', 'PctOfMax']
+X_full = df_rpe[features].dropna().values
+y_full = df_rpe.loc[df_rpe[features].dropna().index, 'RPE'].values
+
+# Or to predict %1RM with more features:
+X_extended = df_rpe[['Reps', 'RPE', 'SetOrder', 'Hour']].values
+y_extended = df_rpe['PctOfMax'].values
+
+poly_ext = PolynomialFeatures(degree=2, include_bias=False, interaction_only=True)
+X_ext_poly = poly_ext.fit_transform(X_extended)
+
+model_ext = LinearRegression()
+model_ext.fit(X_ext_poly, y_extended)
+scores_ext = cross_val_score(model_ext, X_ext_poly, y_extended, cv=5, scoring='r2')
+print(f"Extended R² (5-fold CV): {scores_ext.mean():.3f} ± {scores_ext.std():.3f}")
+```
+
+## Comparing to Standard RPE Scales
+
+Once you have your custom table, compare it against the standard RTS table:
+
+| Reps | RPE 8 (Standard) | RPE 8 (Yours) | Delta |
+|------|:-:|:-:|:-:|
+| 1 | 92.0% | ? | ? |
+| 3 | 86.3% | ? | ? |
+| 5 | 81.1% | ? | ? |
+| 8 | 74.4% | ? | ? |
+| 10 | 70.7% | ? | ? |
+
+> [!IMPORTANT]
+> The delta column reveals where your body diverges from population averages — this is the whole point of a personal RPE scale.
+
+## Key Considerations
+
+### Why Multivariate Over Univariate?
+
+A standard RPE table only uses **(reps, RPE)** as inputs. Multivariate regression lets you account for:
+
+1. **Set order / fatigue** — your RPE 8 on set 4 corresponds to a different %1RM than RPE 8 on set 1
+2. **Exercise specificity** — your bench RPE curve may differ from your squat RPE curve
+3. **Time/recovery** — morning vs. evening sessions, days since last training
+
+### Data Quality Caveats
+
+> [!WARNING]
+> - Your RPE data only includes integer values (6-10), no half-steps (6.5, 7.5, etc.)
+> - RPE is self-reported and subjective — consistency over time matters
+> - ~30% of data is RPE 8, which may bias the model
+> - Some exercises have very few RPE data points (< 10 sets)
+
+### Exercise-Specific Models
+
+For your big 3 lifts (bench/squat/deadlift), you have enough data to fit **per-exercise models** which would be more accurate than a single global model:
+
+| Lift | Sets with RPE | Enough for regression? |
+|------|:-:|:-:|
+| Bench Press (Barbell) | 140 | ✅ Yes |
+| Squat (Barbell) | 121 | ✅ Yes |
+| Deadlift (Barbell) | 82 | ✅ Yes |
+| Triceps Extension | 105 | ✅ Yes |
+| Back Extension | 101 | ✅ Yes |
+| Chest Fly | 82 | ✅ Yes |
+| Lying Leg Curl | 77 | ✅ Yes |
+| Incline DB Bench | 73 | ✅ Yes |
+| Most accessories | < 50 | ⚠️ Use global model |
+
+## Next Steps
+
+1. **Run the analysis script** — I can create a ready-to-run Python script that processes your [strong.csv](file:///Users/conraduyakonwu/VSCode_Personal/cuyakonwu.com/strong.csv) and outputs your custom RPE tables
+2. **Per-exercise tables** — Generate separate RPE scales for bench, squat, and deadlift
+3. **Integrate into your calculator** — Feed the regression coefficients into your existing powerlifting calculator on the website
+4. **Visualization** — Plot your personal %1RM curves vs. standard RPE scales
+
+Would you like me to build the full analysis script?

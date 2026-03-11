@@ -35,6 +35,9 @@
           <li class="nav-item">
             <a class="nav-link" href="/powerlifting">Live Project</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/e1rm_tracker">e1RM Tracker</a>
+          </li>
         </ul>
       </div>
     </div>
@@ -63,64 +66,69 @@
           id="resume-link">
           <img class="landing-pics" src="/static/img/text-file.png" alt="Resume">
         </a>
+      </div>
+      <img src="/static/img/headshot.jpeg" id="headshot" alt="Conrad Headshot">
     </div>
-    <img src="/static/img/headshot.jpeg" id="headshot" alt="Conrad Headshot">
-  </div>
 
-  <div id="about-body" class="hero-main mt-5">
-    <div class="hero-text" style="width: 100%;">
-      <h1 id="awesome" style="margin-bottom: 30px;">About Me</h1>
-      <p>My story starts in Nigeria, where I spent my childhood racing bikes and playing soccer. Shortly before I turned
-        ten, my family immigrated to the United States. Growing up in an underserved community taught me early on that
-        adversity must be met with adaptation. From finding out our only car was repossessed to dedicating over 300
-        hours to community service, I learned that resilience is built drop by drop. This mindset fueled my journey to
-        The University of Chicago as an Odyssey Scholar.</p>
+    <div id="about-body" class="hero-main mt-5">
+      <div class="hero-text" style="width: 100%;">
+        <h1 id="awesome" style="margin-bottom: 30px;">About Me</h1>
+        <p>My story starts in Nigeria, where I spent my childhood racing bikes and playing soccer. Shortly before I
+          turned
+          ten, my family immigrated to the United States. Growing up in an underserved community taught me early on that
+          adversity must be met with adaptation. From finding out our only car was repossessed to dedicating over 300
+          hours to community service, I learned that resilience is built drop by drop. This mindset fueled my journey to
+          The University of Chicago as an Odyssey Scholar.</p>
 
-      <p>Whether I am diagnosing Linux kernel bottlenecks as a Meta Fellow, building generative AI pipelines at BILL, or
-        designing AI curriculums for teachers in Burundi through Code Your Dreams, I carry the "salt mountain"
-        philosophy. This idea—that we are formed by the slow accumulation of both our successes and our struggles—is
-        deeply rooted in my passion for powerlifting. Recently, returning from injury, I trusted my training to hit a
-        722.5kg total at the 5W Midwest Showdown.</p>
+        <p>Whether I am diagnosing Linux kernel bottlenecks as a Meta Fellow, building generative AI pipelines at BILL,
+          or
+          designing AI curriculums for teachers in Burundi through Code Your Dreams, I carry the "salt mountain"
+          philosophy. This idea—that we are formed by the slow accumulation of both our successes and our struggles—is
+          deeply rooted in my passion for powerlifting. Recently, returning from injury, I trusted my training to hit a
+          722.5kg total at the 5W Midwest Showdown.</p>
 
-      <p>The iron hasn't just built personal strength; it's built community. As Co-Founder and President of the UChicago
-        Barbell Club, I've helped grow our team to over 50 members, leading fundraising and spearheading initiatives to
-        pay entry fees for first-time competitors. Life, like the platform, is an accumulation of every heavy step, and
-        I'm dedicated to leveraging my strengths in technology and sports to elevate the voices and opportunities of
-        others around me.</p>
-    </div>
-  </div>
-
-  <div class="fun-facts mt-5 mb-5">
-    <div class="hobbies">
-      <h2 style="color: var(--accent-color);">Hobbies</h2>
-      <div class="hobbies-list">
-        {% for hobby in hobbies %}
-        <div class="hobby d-flex align-items-center mb-3">
-          <div class="hobby-description">
-            <p>{{ hobby.description }}</p>
-          </div>
-          {% if hobby.img %}
-          <div class="hobby-image ms-auto">
-            <img src="{{ hobby.img }}" alt="Hobby Image" class="img-fluid"
-              style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px;">
-          </div>
-          {% endif %}
-        </div>
-        {% endfor %}
+        <p>The iron hasn't just built personal strength; it's built community. As Co-Founder and President of the
+          UChicago
+          Barbell Club, I've helped grow our team to over 50 members, leading fundraising and spearheading initiatives
+          to
+          pay entry fees for first-time competitors. Life, like the platform, is an accumulation of every heavy step,
+          and
+          I'm dedicated to leveraging my strengths in technology and sports to elevate the voices and opportunities of
+          others around me.</p>
       </div>
     </div>
-    <div class="visited mt-5">
-      <p style="color: var(--text-muted); font-size: 1.1rem;">I've also visited Nigeria</p>
-      <img id="nigeria" src="/static/img/nigeria_map.jpeg" alt="Map of Nigeria" style="border-radius: 8px;">
+
+    <div class="fun-facts mt-5 mb-5">
+      <div class="hobbies">
+        <h2 style="color: var(--accent-color);">Hobbies</h2>
+        <div class="hobbies-list">
+          {% for hobby in hobbies %}
+          <div class="hobby d-flex align-items-center mb-3">
+            <div class="hobby-description">
+              <p>{{ hobby.description }}</p>
+            </div>
+            {% if hobby.img %}
+            <div class="hobby-image ms-auto">
+              <img src="{{ hobby.img }}" alt="Hobby Image" class="img-fluid"
+                style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px;">
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="visited mt-5">
+        <p style="color: var(--text-muted); font-size: 1.1rem;">I've also visited Nigeria</p>
+        <img id="nigeria" src="/static/img/nigeria_map.jpeg" alt="Map of Nigeria" style="border-radius: 8px;">
+      </div>
     </div>
-  </div>
 
-  <div class="footer">
-    Conrad Uyakonwu &copy;
-    <script>document.write(new Date().getFullYear())</script>
-  </div>
+    <div class="footer">
+      Conrad Uyakonwu &copy;
+      <script>document.write(new Date().getFullYear())</script>
+    </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
