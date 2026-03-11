@@ -1,1 +1,5 @@
 .DS_Store
+.env
+.venv
+strong.csv
+PowerSheets - The RPE Engine.xlsx
